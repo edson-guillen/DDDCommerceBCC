@@ -1,52 +1,59 @@
 ﻿using DDDCommerceBCC.Domain;
 using DDDCommerceBCC.Infra.Interfaces;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DDDCommerceBCC.Infra.Repositories
 {
     public class PedidoRepository : IPedidoRepository
     {
-        private readonly SqlContext sqlContext;
+        private readonly SqlContext _sqlContext;
 
-        public PedidoRepository()
+        public PedidoRepository(SqlContext sqlContext)
         {
-            sqlContext = new SqlContext();
+            _sqlContext = sqlContext;
         }
 
-        public bool AddPedido(Pedido pedido)
+        public void AddPedido(Pedido pedido)
         {
-            if (pedido == null) return false;
-            sqlContext.Pedidos.Add(pedido);
-            sqlContext.SaveChanges();
-            return true;
+            _sqlContext.Pedidos.Add(pedido);
+            _sqlContext.SaveChanges();
         }
 
-        public bool DeletePedido(int id)
+        public void DeletePedido(int id)
         {
-            if (id  <= 0) return false;
-            var pedido = sqlContext.Pedidos.Find(id);
-            sqlContext.Pedidos.Remove(pedido);
-            return true;
+            var pedido = _sqlContext.Pedidos.Find(id);
+            if (pedido != null)
+            {
+                _sqlContext.Pedidos.Remove(pedido);
+                _sqlContext.SaveChanges();
+            }
         }
 
-        public List<Pedido> GetAll()
+        public IEnumerable<Pedido> GetAllPedidos()
         {
-            return sqlContext.Pedidos.ToList();
+            return _sqlContext.Pedidos.ToList();
         }
 
         public Pedido GetPedidoById(int id)
         {
-            return sqlContext.Pedidos.Find(id);
+            return _sqlContext.Pedidos.Find(id);
         }
 
         public void UpdatePedido(int id, Pedido pedido)
         {
-            throw new NotImplementedException();
+            var existingPedido = _sqlContext.Pedidos.Find(id);
+            if (existingPedido != null)
+            {
+                existingPedido.Data = pedido.Data;
+                existingPedido.LojaOrigem = pedido.LojaOrigem;
+                _sqlContext.SaveChanges();
+            }
+            else
+            {
+                throw new KeyNotFoundException("Pedido not found");
+            }
         }
     }
 }
