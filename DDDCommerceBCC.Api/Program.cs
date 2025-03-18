@@ -2,6 +2,7 @@
 using DDDCommerceBCC.Infra;
 using DDDCommerceBCC.Infra.Interfaces;
 using DDDCommerceBCC.Infra.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace DDDCommerceComRepository.Api
@@ -12,8 +13,10 @@ namespace DDDCommerceComRepository.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
-            //builder.Services.AddScoped<SqlContext, SqlContext>();
+            // Adicionar serviços ao contêiner.
+            builder.Services.AddDbContext<SqlContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
             builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 
             builder.Services.AddControllers();
@@ -23,7 +26,7 @@ namespace DDDCommerceComRepository.Api
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Configurar o pipeline de requisição HTTP.
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -33,7 +36,6 @@ namespace DDDCommerceComRepository.Api
             app.UseHttpsRedirection();
 
             app.UseAuthorization();
-
 
             app.MapControllers();
 
